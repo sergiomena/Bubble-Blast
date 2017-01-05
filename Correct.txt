@@ -1,0 +1,399 @@
+package bubbleblast;
+
+import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class BubbleBlast {
+
+    //dichiarazioni globali perchè sono variabili utilizzate in metodi
+    static int matrice[][] = new int[6][5];
+    static int s, m, game, cont=0;
+    
+    public static void main(String[] args) throws IOException {
+        int coox;   //coordinata lungo asse x
+        int cooy;   //coordinata lungo asse y
+        int mosse=0, winner=0;
+        boolean continuaGioco = true;   //controllo gioco
+        boolean fineGioco = true;   //controllo gioco
+        String livello;
+        String starts;
+        String yes = "si";
+        String no = "no";
+        
+        System.out.println("Bubble blast2\n");
+        System.out.println("In che modalità vuoi giocare?\nFacile?\nMedio?\nDifficile?\n");
+
+        //input stringa
+        Scanner input = new Scanner(System.in);
+        livello = input.nextLine();
+
+        //controllo del livello
+        Livello l = scegliLivello(livello);
+        mosse = l.getNumMosse();
+        matrice = l.getMat();
+
+        System.out.println("Dovrai completare il gioco in " + mosse + " mosse");
+        System.out.println("Buon divertimento!\n");
+
+        //stampo matrice
+        print(matrice);
+
+        //controllo per termianre 
+        while (fineGioco == true) {
+            while (continuaGioco == true) {
+                //inserimento coordinate
+                System.out.println("su che riga vuoi colpire?");
+                cooy = input.nextInt();
+
+                System.out.println("su che colonna vuoi colpire?");
+                coox = input.nextInt();
+                System.out.println("\n");
+
+                //ho appena fatto una mossa
+                cont++;
+
+                //controllo se 4-3-2-1-0
+                controlloTreDueUno(matrice, coox, cooy);
+
+                //controllo se 5
+                controlloCinque(matrice);
+
+                //stampo matrice
+                print(matrice);
+                System.out.println("Hai fatto " + cont + " mosse su " + mosse);
+
+                continuaGioco = devoContinuareGioco(matrice);
+            }
+
+            //controllo vittoria-sconfitta
+            if (cont == mosse) {
+                System.out.println("HAI VINTO!\n");
+                winner++;
+            } else {
+                System.out.println("Non hai completanto con il numero di mosse richiesto!\n");
+            }
+
+            System.out.println("Vuoi giocare ancora?");
+
+            //ricevo in input risposta
+            input.nextLine();   //altrimenti prenderebbe l'invio dell'inserimento precedente
+            starts = input.nextLine();
+
+            //se rispota inserita è si
+            if (yes.equals(starts)) {
+                System.out.println("\nhai scelto di giocare ancora!\n");
+                System.out.println("In che modalità vuoi giocare?\nFacile?\nMedio?\nDifficile?\n");
+
+                //input stringa
+                livello = input.nextLine();
+
+                //controllo del livello
+                Livello i = scegliLivello(livello); //passo alla funzione svegli livello, il livello appena detto dall'utente
+                mosse = i.getNumMosse();            //questa mi restituisce riga scelta random dal file
+                matrice = i.getMat();   //richiamare getMat significa ritornare la mat calcolata in leffifile e assegnarla a matrice
+
+                System.out.println("Dovrai completare il gioco in " + mosse + " mosse");
+                System.out.println("Buon divertimento!\n");
+
+                //stampo matrice
+                print(matrice);
+
+                continuaGioco = true;
+                //inizia una nuova partita quindi il contatore delle mosse va riinizializzato
+                cont = 0;
+            }
+            if (no.equals(starts)) {
+                System.out.println("\nHai scelto di terminare il gioco!");
+                System.out.println("Hai fatto " + game + " partite");
+                System.out.println("Hai vinto " + winner + " partite su " + game);
+                fineGioco = false; //il gioco termina
+            }
+        }
+    }
+
+    //funzione che controlla se matrice è fatta tutta da zeri
+    public static boolean devoContinuareGioco(int matrice[][]) {
+        int c = 0;
+        for (s = 0; s < matrice.length; s++) {
+            for (m = 0; m < matrice[s].length; m++) {
+                c = matrice[s][m] + c;  //sommo tutti gli elementi della matrice
+            }
+        }
+        if (c == 0) {
+            return false;
+        } else {
+            c = 0;
+            return true;
+        }
+    }
+
+    //funzione che mi stampa la matrice con i colori
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static void print(int matrice[][]) {
+        for (s = 0; s < matrice.length; s++) {
+            for (m = 0; m < matrice[s].length; m++) {
+                if (matrice[s][m] == 4) {
+                    System.out.print(ANSI_RED + matrice[s][m] + " " + ANSI_RESET);
+                }
+                if (matrice[s][m] == 3) {
+                    System.out.print(ANSI_GREEN + matrice[s][m] + " " + ANSI_RESET);
+                }
+                if (matrice[s][m] == 2) {
+                    System.out.print(ANSI_YELLOW + matrice[s][m] + " " + ANSI_RESET);
+                }
+                if (matrice[s][m] == 1) {
+                    System.out.print(ANSI_BLUE + matrice[s][m] + " " + ANSI_RESET);
+                }
+                if (matrice[s][m] == 0) {
+                    System.out.print(ANSI_BLACK + matrice[s][m] + " " + ANSI_RESET);
+                }
+            }
+            System.out.print("\n");
+        }
+        System.out.print("\n");
+    }
+
+    //funzione che incrementa numeri da 0 a 4
+    public static void controlloTreDueUno(int matrice[][], int coox, int cooy) {
+        int somma = 0;
+        if (matrice[cooy][coox] == 4) {
+            matrice[cooy][coox] = 0;
+            for (s = 0; s < matrice.length; s++) {
+                for (m = 0; m < matrice[s].length; m++) {
+
+                    //numero sopra
+                    if (s == cooy - 1 && m == coox) {   //mi posiziono nella posizione sopra la coordinata selezionata
+                        if (matrice[cooy - 1][coox] == 0) { //se uguale a zero guardo alla casella (sopra) successiva, fino a che non sono alla lunghezza-1 della matrice, e la incremento di 1, perchè se 0 va saltata
+                            if (matrice[cooy - 1][coox] == 0 && cooy == 1) {    //
+
+                            }
+                            while (matrice[cooy - 1][coox] == 0 && (cooy != 1 && cooy != 0)) { //finche la posizione sopra di me è zero e io non sono nella riga-1 o addiruttura 0, continuo a incrementare
+                                cooy--;
+                                somma++;
+                            }
+                            if (matrice[cooy - 1][coox] != 0) { //se la casella sopra non è zero la incremento semplicemente di 1
+                                matrice[cooy - 1][coox]++;
+                            }
+                        } else {
+                            matrice[cooy - 1][coox]++; //come riga sopra
+                        }
+                    }
+                    cooy = cooy + somma; //riporto cooy al valore che aveva prima della condizione iniziale
+                    somma = 0;
+
+                    //numero sotto
+                    if (s == cooy + 1 && m == coox) {
+                        if (matrice[cooy + 1][coox] == 0) {
+                            if (matrice[cooy + 1][coox] == 0 && cooy == 4) {
+
+                            }
+                            while (matrice[cooy + 1][coox] == 0 && (cooy != 4 && cooy != 5)) {
+                                cooy++;
+                                somma--;
+                            }
+                            if (matrice[cooy + 1][coox] != 0) {
+                                matrice[cooy + 1][coox]++;
+                            }
+                        } else {
+                            matrice[cooy + 1][coox]++;
+                        }
+                    }
+                    cooy = cooy + somma;
+                    somma = 0;
+
+                    //numero sinistra
+                    if (s == cooy && m == coox - 1) {
+                        if (matrice[cooy][coox - 1] == 0) {
+                            if (matrice[cooy][coox - 1] == 0 && coox == 1) {
+
+                            }
+                            while (matrice[cooy][coox - 1] == 0 && (coox != 1 && coox != 0)) {
+                                coox--;
+                                somma++;
+                            }
+                            if (matrice[cooy][coox - 1] != 0) {
+                                matrice[cooy][coox - 1]++;
+                            }
+                        } else {
+                            matrice[cooy][coox - 1]++;
+                        }
+                    }
+                    coox = coox + somma;
+                    somma = 0;
+
+                    //numero destra
+                    if (s == cooy && m == coox + 1) {
+                        if (matrice[cooy][coox + 1] == 0) {
+                            if (matrice[cooy][coox + 1] == 0 && coox == 3) {
+
+                            }
+                            while (matrice[cooy][coox + 1] == 0 && (coox != 3 && coox != 4)) {
+                                coox++;
+                                somma--;
+                            }
+                            if (matrice[cooy][coox + 1] != 0) {
+                                matrice[cooy][coox + 1]++;
+                            }
+                        } else {
+                            matrice[cooy][coox + 1]++;
+                        }
+                    }
+                    coox = coox + somma;
+                    somma = 0;
+                }
+            }
+        } else if (matrice[cooy][coox] == 3) {
+            matrice[cooy][coox] = matrice[cooy][coox] + 1;
+        } else if (matrice[cooy][coox] == 2) {
+            matrice[cooy][coox] = matrice[cooy][coox] + 1;
+        } else if (matrice[cooy][coox] == 1) {
+            matrice[cooy][coox] = matrice[cooy][coox] + 1;
+        } else if (matrice[cooy][coox] == 0) {
+            System.out.println("valore inserito non valido, riprova!\n\n");
+            cont--; //mi decremento perchè nel main incrementato, ma questa realmente non è una mossa
+        }
+    }
+
+    //mi controlla quando un numero diventa 5
+    public static void controlloCinque(int matrice[][]) {
+        int somma = 0;
+        boolean devoSmettere = false;
+        while (devoSmettere == false) {
+            devoSmettere = true;
+            for (s = 0; s < matrice.length; s++) {
+                for (m = 0; m < matrice[s].length; m++) {
+
+                    if (matrice[s][m] >= 5) {
+                        matrice[s][m] = 0;
+                        devoSmettere = false;   //se viene trovato un 5 nella matrice significa che devo rifare almeno ancora una volta il ciclo
+                                                //ogni volta che riparte il ciclo riparte dalla posizione 0,0
+                        //sotto
+                        if (s < matrice.length - 1) {
+                            if (matrice[s + 1][m] == 0) {
+                                if (matrice[s + 1][m] == 0 && s == 4) {
+
+                                }
+                                while (matrice[s + 1][m] == 0 && s != 4) {
+                                    s++;
+                                    somma--;
+                                }
+                                if (matrice[s + 1][m] != 0) {
+                                    matrice[s + 1][m]++;
+                                }
+                            } else {
+                                matrice[s + 1][m]++;
+                            }
+                        }
+                        s = s + somma;
+                        somma = 0;
+
+                        //sopra
+                        if (s > 0) {
+                            if (matrice[s - 1][m] == 0) {
+                                if (matrice[s - 1][m] == 0 && s != 1) {
+
+                                }
+                                while (matrice[s - 1][m] == 0 && s != 1) {
+                                    s--;
+                                    somma++;
+                                }
+                                if (matrice[s - 1][m] != 0) {
+                                    matrice[s - 1][m]++;
+                                }
+                            } else {
+                                matrice[s - 1][m]++;
+                            }
+                        }
+                        s = s + somma;
+                        somma = 0;
+
+                        //sinistra
+                        if (m > 0) {
+                            if (matrice[s][m - 1] == 0) {
+                                if (matrice[s][m - 1] == 0 && m != 1) {
+
+                                }
+                                while (matrice[s][m - 1] == 0 && m != 1) {
+                                    m--;
+                                    somma++;
+                                }
+                                if (matrice[s][m - 1] != 0) {
+                                    matrice[s][m - 1]++;
+                                }
+                            } else {
+                                matrice[s][m - 1]++;
+                            }
+                        }
+                        m = m + somma;
+                        somma = 0;
+
+                        //destra
+                        if (m < matrice[s].length - 1) {
+                            if (matrice[s][m + 1] == 0) {
+                                if (matrice[s][m + 1] == 0 && m != 3) {
+
+                                }
+                                while (matrice[s][m + 1] == 0 && m != 3) {
+                                    m++;
+                                    somma--;
+                                }
+                                if (matrice[s][m + 1] != 0) {
+                                    matrice[s][m + 1]++;
+                                }
+                            } else {
+                                matrice[s][m + 1]++;
+                            }
+                        }
+                        m = m + somma;
+                        somma = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    public static ArrayList<Livello> leggiFile(String nome) {
+        ArrayList<Livello> lista = new ArrayList<>();   //creo un arrey di oggetti livello
+        BufferedReader bf = null;
+        try {
+            bf = new BufferedReader(new FileReader(nome));  //bufferReader oggetto per leggre riga per riga dal file di testo
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BubbleBlast.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        String riga = null;
+        do {    //ciclo fichè ho qualcsa nel file, quando finite matrici esce dal do-while
+            try {
+                riga = bf.readLine();   //riga assume valore di una linea
+            } catch (IOException ex) {
+                Logger.getLogger(BubbleBlast.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            if (riga != null) { 
+                int num_mosse = riga.charAt(riga.length() - 1) - '0';   //num_mosse assume il valore dell'ultimo carattere della riga letta
+                int[][] mat = new int[6][5];
+                for (int i = 0; i < 6; i++) {
+                    for (int j = 0; j < 5; j++) {
+                        mat[i][j] = riga.charAt(i * 5 + j) - '0';   //meotdo per assegnare alla matrice i valori letti nella riga, provare per credere
+                    }
+                }
+                lista.add(new Livello(mat, num_mosse)); //mi ritorna una lista-array di matrici-righe dei numeri e del numeor di mosse che avevo nel file
+            }
+        } while (riga != null);
+        return lista;
+    }
+
+    public static Livello scegliLivello(String livello) throws IOException {    //alla funzione passo la string livello, che era stata presa in input al main e mi indicava il livello di difficoltà
+        String file = livello.toLowerCase() + ".txt";   //mi prende il nome della difficolta, comunque sia scritta
+        System.out.println("hai scelto il " + livello.toLowerCase() + "\n");
+        leggiFile(file);    //alla funzione leggi file passo il nome del file ricevuto in input
+        ArrayList<Livello> letti = leggiFile(file);     //la lista ottenuta dalla funzione di prima la essegno a letti
+        game++; //qui perchè questa funzione richiamata quando è stato finito un livello, e varaibile mi tiene conto delle partite giocate
+        return letti.get((int) Math.floor(Math.random() * letti.size()));   //prima di tornare letti, ne faccio scegliere uno a caso dalla lista ottenuta precedentemente
+    }
+}
